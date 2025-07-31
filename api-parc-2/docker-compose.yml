@@ -1,11 +1,10 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15
+    restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ton_mdp_postgres
+      POSTGRES_PASSWORD: rakem
       POSTGRES_DB: parc2
     ports:
       - "5432:5432"
@@ -14,12 +13,14 @@ services:
 
   api:
     build: .
+    restart: on-failure
+    depends_on:
+      - db
     ports:
       - "3002:3002"
     environment:
-      DATABASE_URL: postgres://postgres:ton_mdp_postgres@db:5432/parc2
-    depends_on:
-      - db
+      DATABASE_URL: postgres://postgres:rakem@db:5432/parc2
+      PORT: 3002
 
 volumes:
   pgdata:
