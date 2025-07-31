@@ -32,3 +32,22 @@ exports.createParc = async (req, res) => {
         res.status(400).json({ message: 'Échec de création', error });
     }
 };
+
+
+// Contrôleur pour récupérer un parc par son ID
+exports.getParcById = async (req, res) => {
+  try {
+    const parc = await Parc.findById(req.params.id); // Récupération via l'id dans l'URL
+
+    if (!parc) {
+      // Si aucun parc n'est trouvé, renvoie un 404
+      return res.status(404).json({ message: 'Parc non trouvé' });
+    }
+
+    // Si le parc est trouvé, le renvoyer avec un code 200
+    res.status(200).json(parc);
+  } catch (error) {
+    // Gestion des erreurs (ex : ID invalide)
+    res.status(500).json({ message: 'Erreur serveur', error });
+  }
+};
