@@ -1,14 +1,5 @@
 services:
   - type: web
-    name: nginx-proxy
-    runtime: docker
-    dockerfilePath: ./Dockerfile.nginx
-    plan: free
-    envVars:
-      - key: NGINX_PORT
-        value: 80
-
-  - type: web
     name: api-parc1
     runtime: docker
     dockerContext: ./api-parc1
@@ -76,6 +67,15 @@ services:
     ipAllowList:
       - source: 0.0.0.0/0
         description: Allow all
+
+  - type: web
+    name: nginx-proxy
+    runtime: docker
+    dockerfilePath: ./Dockerfile.nginx
+    plan: free
+    envVars:
+      - key: NGINX_PORT
+        value: 80
 
 databases:
   - name: postgres1
