@@ -11,6 +11,7 @@ services:
   - type: web
     name: api-parc1
     runtime: docker
+    dockerContext: ./api-parc1
     dockerfilePath: ./api-parc1/Dockerfile
     plan: free
     envVars:
@@ -32,10 +33,16 @@ services:
         fromDatabase:
           name: postgres1
           property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: postgres1
+          property: database
+    healthCheckPath: /health
 
   - type: web
     name: api-parc2
     runtime: docker
+    dockerContext: ./api-parc1
     dockerfilePath: ./api-parc2/Dockerfile
     plan: free
     envVars:
@@ -57,6 +64,11 @@ services:
         fromDatabase:
           name: postgres2
           property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: postgres2
+          property: database
+    healthCheckPath: /health
 
   - type: keyvalue
     name: redis-cache

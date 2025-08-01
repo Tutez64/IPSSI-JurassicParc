@@ -3,10 +3,11 @@ FROM node:18
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --omit=dev
 
-COPY src .
+RUN npm install --only=production
 
-EXPOSE 3002
+COPY src/ .
+
+EXPOSE 3000
 
 CMD ["node", "index.js"]
