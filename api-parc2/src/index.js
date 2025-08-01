@@ -222,7 +222,7 @@ async function startServer() {
   // health
   app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
-  const PORT = process.env.PORT || 3002;
+  const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`API Parc2 écoute sur le port ${PORT}`);
   });

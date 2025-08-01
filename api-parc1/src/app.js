@@ -1,4 +1,3 @@
-// Importation des modules nécessaires
 const express = require('express');
 const dotenv = require('dotenv');
 const parcRoutes = require('./routes/parcRoutes');
@@ -19,10 +18,6 @@ app.use('/api/parcs', parcRoutes);
 // Middleware de gestion des erreurs personnalisé
 app.use(errorHandler);
 
-// Définition du port sur lequel le serveur va écouter
-const PORT = process.env.PORT || 5000;
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
-// Démarrage du serveur Express
-app.listen(PORT, () => {
-  console.log(`Serveur en cours d'exécution sur le port ${PORT}`);
-});
+module.exports = app;  // Export the app instance

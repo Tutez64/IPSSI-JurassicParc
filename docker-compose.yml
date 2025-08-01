@@ -5,7 +5,7 @@ services:
     build:
       context: ./api-parc1
       dockerfile: Dockerfile
-    container_name: api_parc1
+    container_name: api-parc1
     ports:
       - "3001:3000"
     environment:
@@ -13,12 +13,17 @@ services:
       - DB_HOST=postgres1
       - DB_PORT=5432
       - DB_USER=postgres
-      - DB_PASSWORD=your_secure_password
+      - DB_PASSWORD=password
       - DB_NAME=jurassic_db1
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     volumes:
       - shared-volume:/app/shared_data
     depends_on:
-      - postgres1
+      postgres2:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - parc-net
 
@@ -26,7 +31,7 @@ services:
     build:
       context: ./api-parc2
       dockerfile: Dockerfile
-    container_name: api_parc2
+    container_name: api-parc2
     ports:
       - "3002:3000"
     environment:
@@ -41,8 +46,10 @@ services:
     volumes:
       - shared-volume:/app/shared_data
     depends_on:
-      - postgres2
-      - redis
+      postgres2:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - parc-net
 
@@ -51,13 +58,18 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=jurassic_db2
+      - POSTGRES_DB=jurassic_db1
     volumes:
       - pgdata1:/var/lib/postgresql/data
     ports:
       - "5433:5432"
     networks:
       - parc-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   postgres2:
     image: postgres:14
@@ -71,6 +83,11 @@ services:
       - "5434:5432"
     networks:
       - parc-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7
