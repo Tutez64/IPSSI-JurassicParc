@@ -3,7 +3,7 @@
 // Importation du fichier de configuration Sequelize
 const sequelize = require('./config/sequelize');
 // Importation de l'application Express
-const app = require('./src/app');
+const app = require('./app');
 
 // Définition du port depuis le fichier .env ou défaut à 5000
 const PORT = process.env.PORT || 5000;

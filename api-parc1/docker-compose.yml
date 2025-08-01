@@ -1,0 +1,34 @@
+version: '3.9'
+
+services:
+  postgres1:
+    image: postgres:15
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=jurassic_db1
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata1:/var/lib/postgresql/data
+
+  api:
+    build: src
+    restart: on-failure
+    depends_on:
+      - postgres1
+      - redis
+    ports:
+      - "3001:3000"
+    env_file:
+      - .env
+
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - "6379:6379"
+      -
+volumes:
+  pgdata2:

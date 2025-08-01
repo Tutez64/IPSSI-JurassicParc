@@ -1,5 +1,5 @@
 // Importation des modules Sequelize
-const { Sequelize } = require('sequelize');
+const { Sequelize } = require('api-parc1/src/config/sequelize');
 
 // Connexion à PostgreSQL avec les variables d’environnement
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {

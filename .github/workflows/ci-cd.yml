@@ -1,0 +1,38 @@
+name: CI/CD Main
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  ci-parc1:
+    uses: ./.github/workflows/ci-api-parc1.yml
+
+  ci-parc2:
+    uses: ./.github/workflows/ci-api-parc2.yml
+
+  deploy-staging:
+    if: github.ref == 'refs/heads/develop'
+    needs: [ci-parc1, ci-parc2]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy Staging
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_STAGING_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    needs: [ci-parc1, ci-parc2]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy Prod
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_PROD_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}

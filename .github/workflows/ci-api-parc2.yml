@@ -1,0 +1,15 @@
+name: CI API Parc2
+
+on:
+  workflow_call:
+
+jobs:
+  build-test-parc2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API2
+        run: docker build -t api-parc2 ./api-parc2
+      - name: Test API2
+        run: |
+          # docker run api-parc2 npm test

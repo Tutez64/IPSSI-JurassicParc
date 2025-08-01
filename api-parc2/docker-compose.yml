@@ -1,26 +1,26 @@
 version: '3.9'
 
 services:
-  db:
+  postgres2:
     image: postgres:15
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: rakem
-      POSTGRES_DB: parc2
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=jurassic_db2
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata2:/var/lib/postgresql/data
 
   api:
-    build: .
+    build: src
     restart: on-failure
     depends_on:
-      - db
+      - postgres2
       - redis
     ports:
-      - "3002:3002"
+      - "3002:3000"
     env_file:
       - .env
 
@@ -31,4 +31,4 @@ services:
       - "6379:6379"
 
 volumes:
-  pgdata:
+  pgdata2:
