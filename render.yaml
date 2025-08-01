@@ -2,14 +2,11 @@ services:
   - type: web
     name: nginx-proxy
     runtime: docker
-    repo: https://github.com/Tutez64/IPSSI-JurassicParc
     dockerfilePath: ./Dockerfile.nginx
     plan: free
     envVars:
       - key: NGINX_PORT
         value: 80
-    domains:
-      - jurassic-prod.onrender.com
 
   - type: web
     name: api-parc1
@@ -31,10 +28,10 @@ services:
         fromDatabase:
           name: postgres1
           property: user
-      - key: DB_PWD
+      - key: DB_PASSWORD
         fromDatabase:
           name: postgres1
-          property: pwd
+          property: password
 
   - type: web
     name: api-parc2
@@ -56,22 +53,23 @@ services:
         fromDatabase:
           name: postgres2
           property: user
-      - key: DB_PWD
+      - key: DB_PASSWORD
         fromDatabase:
           name: postgres2
-          property: pwd
+          property: password
 
-  - type: redis
+  - type: keyvalue
     name: redis-cache
     plan: free
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: Allow all
 
 databases:
   - name: postgres1
     databaseName: jurassic_db1
-    user: postgres
     plan: free
 
   - name: postgres2
     databaseName: jurassic_db2
-    user: postgres
     plan: free
