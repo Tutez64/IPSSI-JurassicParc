@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
   db:
     image: postgres:15
@@ -18,9 +20,8 @@ services:
       - db
     ports:
       - "3002:3002"
-    environment:
-      DATABASE_URL: postgres://postgres:rakem@db:5432/parc2
-      PORT: 3002
+    env_file:
+      - .env
 
 volumes:
   pgdata:

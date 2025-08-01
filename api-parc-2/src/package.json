@@ -1,7 +1,7 @@
 {
   "name": "api-parc2-keepers",
   "version": "1.0.0",
-  "description": "API Parc 2 - gestion des gardiens",
+  "description": "API Parc 2 - gestion des gardiens, dinosaures et incidents",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

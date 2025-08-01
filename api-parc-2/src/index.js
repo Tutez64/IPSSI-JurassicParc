@@ -1,73 +1,14 @@
 require('dotenv').config();
 const express = require('express');
-const { Client } = require('pg');
 const { v4: uuidv4 } = require('uuid');
-
-const MAX_RETRIES = 10;
-const RETRY_DELAY_MS = 2000;
-
-async function connectWithRetry(retries = 0) {
-  const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-  });
-
-  try {
-    await client.connect();
-    console.log("Connecté à la DB");
-    return client;
-  } catch (err) {
-    if (retries >= MAX_RETRIES) {
-      console.error("Échec de connexion à PostgreSQL après plusieurs tentatives:", err);
-      process.exit(1);
-    }
-    console.warn(`Connexion à la DB refusée, tentative ${retries + 1}/${MAX_RETRIES} dans ${RETRY_DELAY_MS}ms...`);
-    await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
-    return connectWithRetry(retries + 1);
-  }
-}
+const { connectWithRetry, initTables } = require('./db');
 
 const app = express();
 app.use(express.json());
 
 async function startServer() {
   const client = await connectWithRetry();
-
-  
-  await client.query(`
-    CREATE TABLE IF NOT EXISTS keepers (
-      id UUID PRIMARY KEY,
-      name TEXT NOT NULL,
-      specialty TEXT CHECK (specialty IN ('carnivores','herbivores','medical','security')),
-      sector TEXT,
-      available BOOLEAN DEFAULT true,
-      experience INT CHECK (experience BETWEEN 1 AND 10),
-      created_at TIMESTAMP DEFAULT NOW()
-    );
-  `);
-
-  await client.query(`
-    CREATE TABLE IF NOT EXISTS dinosaurs (
-      id UUID PRIMARY KEY,
-      name TEXT NOT NULL,
-      species TEXT NOT NULL,
-      enclosure TEXT,
-      health_status TEXT CHECK (health_status IN ('healthy','sick','critical')),
-      last_fed_at TIMESTAMP,
-      danger_level INT CHECK (danger_level BETWEEN 1 AND 10),
-      created_at TIMESTAMP DEFAULT NOW()
-    );
-  `);
-
-  await client.query(`
-    CREATE TABLE IF NOT EXISTS incidents (
-      id UUID PRIMARY KEY,
-      dinosaur_id UUID REFERENCES dinosaurs(id),
-      description TEXT,
-      severity TEXT CHECK (severity IN ('low','medium','high','critical')),
-      status TEXT CHECK (status IN ('open','in-progress','resolved')),
-      created_at TIMESTAMP DEFAULT NOW()
-    );
-  `);
+  await initTables(); // crée les tables une fois connecté
 
   // ---- KEEPERS ----
   app.get('/keepers', async (req, res) => {
@@ -138,7 +79,7 @@ async function startServer() {
     }
   });
 
-  //  DINOSAURS 
+  // ---- DINOSAURS ----
   app.get('/dinosaurs', async (req, res) => {
     try {
       const result = await client.query('SELECT * FROM dinosaurs');
@@ -162,7 +103,7 @@ async function startServer() {
 
   app.post('/dinosaurs', async (req, res) => {
     const { name, species, enclosure, health_status, danger_level } = req.body;
-    if (!name || !species) return res.status(400).json({ error: 'Champs name et species requis' });
+    if (!name || !species) return res.status(400).json({ error: 'name et species requis' });
     const id = uuidv4();
     try {
       const result = await client.query(
@@ -204,7 +145,7 @@ async function startServer() {
     }
   });
 
-  // pour INCIDENTS 
+  // ---- INCIDENTS ----
   app.get('/incidents', async (req, res) => {
     try {
       const result = await client.query('SELECT * FROM incidents');
