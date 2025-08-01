@@ -2,21 +2,26 @@ require('dotenv').config();
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { connectWithRetry, initTables } = require('./db');
+const redis = require('./redisClient'); 
 
 const app = express();
 app.use(express.json());
 
 async function startServer() {
   const client = await connectWithRetry();
-  await initTables(); // crée les tables une fois connecté
+  await initTables();
 
   // ---- KEEPERS ----
   app.get('/keepers', async (req, res) => {
     try {
+      const cached = await redis.get('keepers');
+      if (cached) return res.json(JSON.parse(cached));
+
       const result = await client.query('SELECT * FROM keepers');
+      await redis.set('keepers', JSON.stringify(result.rows), { EX: 60 });
       res.json(result.rows);
     } catch (e) {
-      console.error(e);
+      console.error('Erreur Redis ou DB:', e);
       res.status(500).json({ error: 'Erreur serveur' });
     }
   });
@@ -44,6 +49,7 @@ async function startServer() {
          VALUES ($1,$2,$3,$4,$5,$6) RETURNING *;`,
         [id, name, specialty, sector, available ?? true, experience]
       );
+      await redis.del('keepers'); // Invalider le cache
       res.status(201).json(result.rows[0]);
     } catch (error) {
       console.error('Erreur insertion keeper:', error);
@@ -61,6 +67,7 @@ async function startServer() {
         [name, specialty, sector, available, experience, req.params.id]
       );
       if (result.rows.length === 0) return res.status(404).json({ error: 'Keeper non trouvé' });
+      await redis.del('keepers'); // Invalider le cache
       res.json(result.rows[0]);
     } catch (e) {
       console.error('Erreur update keeper:', e);
@@ -72,6 +79,7 @@ async function startServer() {
     try {
       const result = await client.query('DELETE FROM keepers WHERE id=$1 RETURNING *;', [req.params.id]);
       if (result.rows.length === 0) return res.status(404).json({ error: 'Keeper non trouvé' });
+      await redis.del('keepers'); // Invalider le cache
       res.json({ deleted: true });
     } catch (e) {
       console.error('Erreur delete keeper:', e);
